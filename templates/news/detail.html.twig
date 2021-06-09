@@ -5,7 +5,7 @@
     <h1>{{ item.title }}</h1>
     <h3>{{ item.dateAt|format_datetime('medium', 'short', locale='ru') }}</h3>
     {% if item.image %}
-        <img src="{{ asset('uploads/images/' ~ item.image) }}" />
+        <img src="{{ item.image }}" />
     {% endif %}
     <p>{{ item.text }}</p>
     <a href="/">Назад</a>

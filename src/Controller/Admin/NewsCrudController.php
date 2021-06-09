@@ -19,7 +19,6 @@ class NewsCrudController extends AbstractCrudController
         return News::class;
     }
 
-
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
@@ -41,14 +40,5 @@ class NewsCrudController extends AbstractCrudController
         yield TextareaField::new('text');
         yield TextField::new('image');
         yield DateTimeField::new('dateAt');
-
-        $createdAt = DateTimeField::new('createdAt');
-
-        if (Crud::PAGE_EDIT === $pageName) {
-            yield $createdAt->setFormTypeOption('disabled', true);
-        } else {
-            yield $createdAt;
-        }
     }
-
 }

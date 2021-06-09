@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=NewsRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class News
 {
@@ -53,6 +54,11 @@ class News
      */
     private $source;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $url;
+
     public function __toString(): string
     {
         return $this->getTitle();
@@ -77,7 +83,7 @@ class News
 
     public function getPreview(): ?string
     {
-        return $this->preview;
+        return $this->preview ? $this->preview : mb_substr($this->text, 0, 200);
     }
 
     public function setPreview(?string $preview): self
@@ -128,6 +134,14 @@ class News
         return $this->createdAt;
     }
 
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue()
+    {
+        $this->createdAt = new \DateTime();
+    }
+
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
@@ -143,6 +157,18 @@ class News
     public function setSource(?Source $source): self
     {
         $this->source = $source;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): self
+    {
+        $this->url = $url;
 
         return $this;
     }

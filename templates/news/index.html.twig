@@ -9,6 +9,6 @@
         <h2>{{ item.title }}</h2>
         <h3>{{ item.dateAt|format_datetime('medium', 'short', locale='ru') }}</h3>
         <p>{{ item.preview }}</p>
-        <a href="/news/{{ item.id }}">Подробнее</a>
+        <a href="{{ path('news', { id: item.id }) }}">Подробнее</a>
     {% endfor %}
 {% endblock %}
