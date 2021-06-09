@@ -72,29 +72,50 @@ class NewsParser
         if ($content = $this->readUrl($news->getUrl())) {
             $crawler = new Crawler($content);
 
-            $crawler->filter('div.article__content')->each(function (Crawler $article) use ($news) {
+            $crawler->filter('h1.article__header__title-in')->each(function (Crawler $title) use ($news) {
+                $news->setTitle($title->text());
+            });
 
-                $article->filter('div.article__text')->each(function (Crawler $text) use ($news) {
+            $news->setDateAt(new \DateTime());
+            $crawler->filter('span.article__header__date')->each(function (Crawler $date) use ($news) {
+                $news->setDateAt(new \DateTime($date->attr('content')));
+            });
+
+            $partText = [];
+            $crawler->filter('div.article__content')->each(function (Crawler $article) use ($news, &$partText) {
+                $article->filter('div.article__text')->each(function (Crawler $text) use ($news, &$partText) {
                     $text->filter('div.news-bar_article')->each(function (Crawler $bar) {
                         foreach ($bar as $node) {
                             $node->parentNode->removeChild($node);
                         }
                     });
+                    $text->filter('div.article__inline-item')->each(function (Crawler $bar) {
+                        foreach ($bar as $node) {
+                            $node->parentNode->removeChild($node);
+                        }
+                    });
+                    $text->filter('div.article__special_container')->each(function (Crawler $bar) {
+                        foreach ($bar as $node) {
+                            $node->parentNode->removeChild($node);
+                        }
+                    });
+                    $text->filter('div.pro-anons')->each(function (Crawler $bar) {
+                        foreach ($bar as $node) {
+                            $node->parentNode->removeChild($node);
+                        }
+                    });
 
-                    $news->setText($text->eq(0)->text());
+                    $text->filter('img.article__main-image__image')->each(function (Crawler $image) use ($news) {
+                        $news->setImage($image->attr('src'));
+                    });
+
+                    $partText[] = $text->eq(0)->text();
                 });
-
-                $article->filter('span.article__header__date')->each(function (Crawler $date) use ($news) {
-                    $news->setDateAt(new \DateTime($date->attr('content')));
-                });
-
-                $article->filter('img.article__main-image__image')->each(function (Crawler $image) use ($news) {
-                    $news->setImage($image->attr('src'));
-                });
-
-                $this->entityManager->persist($news);
-                $this->entityManager->flush();
             });
+
+            $news->setText(implode(PHP_EOL, $partText));
+            $this->entityManager->persist($news);
+            $this->entityManager->flush();
         }
     }
 }

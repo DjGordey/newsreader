@@ -1,12 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Новости . {{ item.title }}{% endblock %}
+{% block title %}{{ item.title }}{% endblock %}
 {% block body %}
     <h1>{{ item.title }}</h1>
     <h3>{{ item.dateAt|format_datetime('medium', 'short', locale='ru') }}</h3>
     {% if item.image %}
-        <img src="{{ item.image }}" />
+        <div><img src="{{ item.image }}"/></div>
     {% endif %}
-    <p>{{ item.text }}</p>
-    <a href="/">Назад</a>
+    {{ item.text|nl2br }}
+    <p>Оригинал: <a href="{{ item.url }}" target="_blank">{{ item.url }}</a></p>
+    <p><a href="/">Назад</a></p>
 {% endblock %}
