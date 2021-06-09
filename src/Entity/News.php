@@ -18,11 +18,6 @@ class News
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private $source_id;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $title;
@@ -58,21 +53,14 @@ class News
      */
     private $source;
 
+    public function __toString(): string
+    {
+        return $this->getTitle();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getSourceId(): ?int
-    {
-        return $this->source_id;
-    }
-
-    public function setSourceId(int $source_id): self
-    {
-        $this->source_id = $source_id;
-
-        return $this;
     }
 
     public function getTitle(): ?string
