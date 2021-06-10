@@ -7,10 +7,7 @@ use App\Entity\Source;
 use App\Repository\NewsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class NewsParser
@@ -37,6 +34,11 @@ class NewsParser
         }
     }
 
+    public function parseNews(News $news)
+    {
+        $this->getNewsDetails($news);
+    }
+
     private function readUrl(string $url): string
     {
         try {
@@ -44,7 +46,7 @@ class NewsParser
             if ($response->getStatusCode() === 200) {
                 return $response->getContent();
             }
-        } catch (TransportExceptionInterface | ClientExceptionInterface | RedirectionExceptionInterface | ServerExceptionInterface $e) {
+        } catch (ExceptionInterface $e) {
         }
         return '';
     }
@@ -60,6 +62,7 @@ class NewsParser
             if (!$news) {
                 $news = new News();
                 $news->setUrl($url);
+                $news->setDateAt(new \DateTime());
             }
             $news->setTitle($node->text());
             $news->setSource($source);
@@ -70,50 +73,15 @@ class NewsParser
     private function getNewsDetails(News $news)
     {
         if ($content = $this->readUrl($news->getUrl())) {
-            $crawler = new Crawler($content);
 
-            $crawler->filter('h1.article__header__title-in')->each(function (Crawler $title) use ($news) {
-                $news->setTitle($title->text());
-            });
+            if ($news->getSource()->getName() == 'RBC') {
+                $detailParser = new NewsDetailParserRBC($news, $content);
+            } else {
+                $detailParser = new NewsDetailParser($news, $content);
+            }
 
-            $news->setDateAt(new \DateTime());
-            $crawler->filter('span.article__header__date')->each(function (Crawler $date) use ($news) {
-                $news->setDateAt(new \DateTime($date->attr('content')));
-            });
+            $detailParser->getNewsDetails();
 
-            $partText = [];
-            $crawler->filter('div.article__content')->each(function (Crawler $article) use ($news, &$partText) {
-                $article->filter('div.article__text')->each(function (Crawler $text) use ($news, &$partText) {
-                    $text->filter('div.news-bar_article')->each(function (Crawler $bar) {
-                        foreach ($bar as $node) {
-                            $node->parentNode->removeChild($node);
-                        }
-                    });
-                    $text->filter('div.article__inline-item')->each(function (Crawler $bar) {
-                        foreach ($bar as $node) {
-                            $node->parentNode->removeChild($node);
-                        }
-                    });
-                    $text->filter('div.article__special_container')->each(function (Crawler $bar) {
-                        foreach ($bar as $node) {
-                            $node->parentNode->removeChild($node);
-                        }
-                    });
-                    $text->filter('div.pro-anons')->each(function (Crawler $bar) {
-                        foreach ($bar as $node) {
-                            $node->parentNode->removeChild($node);
-                        }
-                    });
-
-                    $text->filter('img.article__main-image__image')->each(function (Crawler $image) use ($news) {
-                        $news->setImage($image->attr('src'));
-                    });
-
-                    $partText[] = $text->eq(0)->text();
-                });
-            });
-
-            $news->setText(implode(PHP_EOL, $partText));
             $this->entityManager->persist($news);
             $this->entityManager->flush();
         }

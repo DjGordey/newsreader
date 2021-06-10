@@ -22,7 +22,7 @@ class NewsCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setSearchFields(['dateAt', 'title', 'preview'])
+            ->setSearchFields(['dateAt', 'title'])
             ->setDefaultSort(['createdAt' => 'DESC']);
     }
 

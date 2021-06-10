@@ -5,10 +5,12 @@
 {% block body %}
 
     <h1>Новости</h1>
+    <p><a href="?reload=1">Загрузить новости из источников</a></p>
+
     {% for item in news %}
         <h2>{{ item.title }}</h2>
         <h3>{{ item.dateAt|format_datetime('medium', 'short', locale='ru') }}</h3>
-        <p>{{ item.preview }}</p>
+        <p>{{ item.preview|slice(0, 200) }}...</p>
         <a href="{{ path('news', { id: item.id }) }}">Подробнее</a>
     {% endfor %}
 {% endblock %}
