@@ -18,12 +18,15 @@ class NewsDetailParser
 
     protected static array $removeBlocks = [];
 
+    private SourceReader $sourceReader;
     private News $news;
     private Crawler $crawler;
 
-    public function __construct(News $news, string $content)
+    public function __construct(SourceReader $sourceReader, News $news)
     {
         $this->news = $news;
+        $this->sourceReader = $sourceReader;
+        $content = $this->sourceReader->readUrl($news->getUrl());
         $this->crawler = new Crawler($content);
     }
 
