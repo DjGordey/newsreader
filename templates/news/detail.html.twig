@@ -5,18 +5,12 @@
     <h1>{{ item.title }}</h1>
     <h3>{{ item.dateAt|format_datetime('medium', 'short', locale='ru') }}</h3>
     {% if item.image %}
-        <div><img src="{{ item.image }}"/></div>
+        <div><img src="{{ item.image }}" width="500"/></div>
     {% endif %}
     {{ item.text|raw }}
     <p>Оригинал: <a href="{{ item.url }}" target="_blank">{{ item.url }}</a></p>
     <p><a href="/">Назад</a></p>
 
     <p><a href="{{ path('news', { id: item.id, 'reload':1 }) }}">Обновить новость из источника</a></p>
-
-
-    <hr>
-    <hr>
-    <hr>
-    {{ item.text }}
 
 {% endblock %}
